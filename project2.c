@@ -1,5 +1,5 @@
 /*
- CS 3113, Fall 2018 Project 1, Due 9/27/2018
+ CS 3113, Fall 2018 Project 2, Due 10/18/2018
  By Clark Barrus
  Instructor: Dr. Fagg, Dr. Grant
 
