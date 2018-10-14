@@ -33,6 +33,7 @@ environ - displays current environment
 
 */
 
+//Includes
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,186 +42,383 @@ environ - displays current environment
 #include <sys/stat.h>
 #include <fcntl.h>
 
+//Definitions
 #define MAX_BUFFER 1024                        // max line buffer
+#define MAX_FILENAME 257                       // max length of file path
 #define MAX_ARGS 64                            // max # args
 #define SEPARATORS " \t\n"                     // token sparators
-#define EXIT_SUCCESS 0                         // exit success code
-#define EXIT_FAILURE -1                        // exit failure code
+#define ERASE 1
+#define MIMIC 2
+#define MORPH 4
 
+//Structures
+struct filemanip_st {
+  char src[MAX_FILENAME]; // This is the source file or the only file in case of an erase;
+  char dst[MAX_FILENAME];
+  unsigned int op; // 0 = erase; 1 = mimic; 2 = morph;
+};
+typedef struct filemanip_st filemanip;
+
+//Helper Funcitons
+int is_directory(const char *path); // Checks for directory
+int dofileoperation(filemanip *); // perform file operations
+
+//External vars
 extern char **environ;                   // environment array
 
 int main (int argc, char ** argv)
 {
-	char buf[MAX_BUFFER];                      // line buffer
-	char * args[MAX_ARGS];                     // pointers to arg strings
-	char ** arg;                               // working pointer thru args
-	char * prompt = "==>" ;                    // shell prompt
+  char buf[MAX_BUFFER];                      // line buffer
+  char * args[MAX_ARGS];                     // pointers to arg strings
+  char ** arg;                               // working pointer thru args
+  char * prompt = "==>" ;                    // shell prompt
 
-	setbuf(stdout, NULL);
+  setbuf(stdout, NULL);
 
-	//Check for batch file
-	if(argc >= 2) {
-		//Batchfile exists, contained in argv[1]
-		if ( -1 == fileno(freopen(argv[1], "r", stdin))) {
-			//Check for valid batchfile
-			fprintf(stderr, "Error opening batchfile");
-			exit(-1);
-		} //Batchfile now set as stdin
-	}
-
-
-
-	// keep reading input until "quit" command or eof of redirected input
-
-	while (!feof(stdin)) {
-		// get command line from input
-
-		fputs (prompt, stdout); // write prompt TODO: Add FILE NAME TO PROMPT
-
-		if (fgets (buf, MAX_BUFFER, stdin ))
-		{ // read a line
-			//If stdin is not terminal, print buf
-			if (isatty(fileno(stdin)) == 0)
-			{
-				if (ENOTTY == errno)
-				fprintf(stdout, "%s", buf);
-				else
-				fprintf(stderr, "Error: stdin not valid");
-			}
-
-			// tokenize the input into args array
-			char * bufcopy = strdup(buf); //Copy user input to potentially pass to system()
-			arg = args;
-			*arg++ = strtok(buf,SEPARATORS);   // tokenize input
-			while ((*arg++ = strtok(NULL,SEPARATORS)));
-			// last entry will be NULL
-
-			// Check if there's anything there
-			if (args[0]){
-				// check for internal/external command
-				if (!strcmp(args[0],"wipe"))	// "clear" command
-				{
-					fflush(stdout);
-					system("clear");
-					fflush(stdout);
-					continue;
-				}
-
-				if (!strcmp(args[0],"esc"))		// "quit" command
-				{
-					if (isatty(fileno(stdin)) == 0) //If bashfile, add a new line character
-					fprintf(stdout, "\n");
-					break; // break out of 'while' loop
-				}
-
-				if (!strcmp(args[0], "help")) //Prints readme file
-				{
-					//Open readme file
-					int fd = open("/projects/1/README.txt", O_RDONLY);
-
-					if (fd == -1) //Check for error
-					{
-						fprintf(stderr, "%s", "Error: Opening README.txt\n");
-						exit(-1);
-					}
-
-					//Print help file to stdout
-					char readmebuf[MAX_BUFFER];
-					int readret = 0;
-					while (readret = read(fd, readmebuf, MAX_BUFFER - 1))
-					{
-						if(readret == -1) //Check for error
-						{
-							fprintf(stderr, "Error: Reading README.txt\n");
-						}
-						readmebuf[readret] = '\0'; //Set last char in cstring to be null
-						fprintf(stdout, "%s", readmebuf); //Should print properly
-					}
-					//Close help file
-					if (close(fd) == -1) //Check for error
-					{
-						fprintf(stderr, "%s", "Error: Closing README.txt\n");
-						exit(-1);
-					}
-					continue;
-				}
-
-				//TODO mimic, morph
+  //Check for batch file
+  if(argc >= 2) {
+    //Batchfile exists, contained in argv[1]
+    if ( -1 == fileno(freopen(argv[1], "r", stdin))) {
+      //Check for valid batchfile
+      fprintf(stderr, "Error opening batchfile");
+      exit(-1);
+    } //Batchfile now set as stdin
+  }
 
 
-				if (!strcmp(args[0],"filez")) // "ls" command
-				{
-					//Construct command to pass to system
-					if (args[1])
-					{
-						char buffer[MAX_BUFFER];
-						snprintf(buffer, MAX_BUFFER, "%s%s", "ls -1 ", args[1]);
-						system(buffer);
-					}
-					else
-					{
-						fflush(stdout);
-						system("ls -1");
-						fflush(stdout);
-					}
 
-					continue;
-				}
+  // keep reading input until "quit" command or eof of redirected input
 
-				if (!strcmp(args[0],"ditto")) { // comment command
-					arg = args;
-					arg++;
-					if (*arg) fprintf(stdout,"%s",*arg++);
-					while (*arg) fprintf(stdout," %s",*arg++);
-					fprintf(stdout,"\n");
-					continue;
-				}
+  while (!feof(stdin)) {
+    // get command line from input
 
-				if (!strcmp(args[0],"chdir")) { // "cd" command
-				if (!args[1]) {
-					fprintf(stdout,"%s\n", getenv("PWD"));
-				} else if (!chdir(args[1])) {
-					char buffer1[MAX_BUFFER];
-					getcwd(args[1], MAX_BUFFER);
-					snprintf(buffer1, MAX_BUFFER, "%s%s", "PWD=", args[1]);
-					putenv(buffer1);
-				} else {
-					fprintf(stderr, "Invalid path for chdir\n");
-				}
-				continue;
-			}
+    fputs (prompt, stdout); // write prompt TODO: Add FILE NAME TO PROMPT
 
-			if (!strcmp(args[0], "erase")) //"rm" command
-			{
-				if (args[1]) {
-					if(remove(args[1]))
-					fprintf(stderr, "Error: erase unsuccessful\n");
-				}
-				else
-				fprintf(stderr, "Error: erase must have an arguement.\n");
+    if (fgets (buf, MAX_BUFFER, stdin ))
+    { // read a line
+      //If stdin is not terminal, print buf
+      if (isatty(fileno(stdin)) == 0)
+      {
+        if (ENOTTY == errno)
+        fprintf(stdout, "%s", buf);
+        else
+        fprintf(stderr, "Error: stdin not valid");
+      }
 
-				continue;
-			}
+      // tokenize the input into args array
+      char * bufcopy = strdup(buf); //Copy user input to potentially pass to system()
+      arg = args;
+      *arg++ = strtok(buf,SEPARATORS);   // tokenize input
+      while ((*arg++ = strtok(NULL,SEPARATORS)));
+      // last entry will be NULL
 
-			//Code for this case provided by instructor on website
-			if (!strcmp(args[0],"environ")) // "environment" command
+      //TODO Add IO redirection, <, >, >>
 
-			{
-				char **env = environ;
+      // Check if there's anything there
+      if (args[0]){
+        // check for internal/external command
 
-				while (*env) printf("%s\n",*env++);  // step through environment
-				continue;
-			}
+        //wipe
+        if (!strcmp(args[0],"wipe"))  // "clear" command
+        {
+          fflush(stdout);
+          system("clear");
+          fflush(stdout);
+          continue;
+        }
 
-			// else pass command onto OS
-			fflush(stdout);
-			system(bufcopy);
-			fflush(stdout);
+        //esc
+        if (!strcmp(args[0],"esc"))    // "quit" command
+        {
+          if (isatty(fileno(stdin)) == 0) //If bashfile, add a new line character
+          fprintf(stdout, "\n");
+          break; // break out of 'while' loop
+        }
+
+        //help
+        if (!strcmp(args[0], "help")) //Prints readme file
+        {
+          //Open readme file
+          int fd = open("/projects/1/README.txt", O_RDONLY);
+
+          if (fd == -1) //Check for error
+          {
+            fprintf(stderr, "%s", "Error: Opening README.txt\n");
+            exit(-1);
+          }
+
+          //Print help file to stdout
+          char readmebuf[MAX_BUFFER];
+          int readret = 0;
+          while (readret = read(fd, readmebuf, MAX_BUFFER - 1))
+          {
+            if(readret == -1) //Check for error
+            {
+              fprintf(stderr, "Error: Reading README.txt\n");
+            }
+            readmebuf[readret] = '\0'; //Set last char in cstring to be null
+            fprintf(stdout, "%s", readmebuf); //Should print properly
+          }
+          //Close help file
+          if (close(fd) == -1) //Check for error
+          {
+            fprintf(stderr, "%s", "Error: Closing README.txt\n");
+            exit(-1);
+          }
+          continue;
+        }
+
+        //mimic
+        if (!strcmp(args[0],"mimic")) {
+          if (!args[1] || !args[2]) {
+            syserrmsg("error mimic takes two or three parameters", NULL);
+          }
+          else {
+            strcpy(fileops.src, args[1]);
+            strcpy(fileops.dst, args[2]);
+            fileops.op = MIMIC;
+            dofileoperation(args, &fileops);
+          }
+        }
+
+        //morph
+        if (!strcmp(args[0],"morph")) {
+          if (!args[1] || !args[2]) {
+            syserrmsg("error morph takes two or three parameters", NULL);
+          }
+          else {
+            strcpy(fileops.src, args[1]);
+            strcpy(fileops.dst, args[2]);
+            fileops.op = MORPH;
+            dofileoperation(args, &fileops);
+          }
+        }
+
+        //erase
+        if (!strcmp(args[0], "erase")) //"rm" command
+        {
+          if (!args[1]) {
+            syserrmsg("error erase takes one parameter", NULL);
+          }
+          else {
+            strcpy(fileops.src, args[1]);
+            fileops.op = ERASE;
+            dofileoperation(args, &fileops);
+          }
+          continue;
+        }
+
+        //filez
+        if (!strcmp(args[0],"filez")) // "ls" command
+        {
+          //Construct command to pass to system
+          if (args[1])
+          {
+            char buffer[MAX_BUFFER];
+            snprintf(buffer, MAX_BUFFER, "%s%s", "ls -1 ", args[1]);
+            system(buffer);
+          }
+          else
+          {
+            fflush(stdout);
+            system("ls -1");
+            fflush(stdout);
+          }
+
+          continue;
+        }
+
+        //ditto
+        if (!strcmp(args[0],"ditto")) { // comment command
+          arg = args;
+          arg++;
+          if (*arg) fprintf(stdout,"%s",*arg++);
+          while (*arg) fprintf(stdout," %s",*arg++);
+          fprintf(stdout,"\n");
+          continue;
+        }
+
+        //chdir
+        if (!strcmp(args[0],"chdir")) { // "cd" command
+        if (!args[1]) {
+          fprintf(stdout,"%s\n", getenv("PWD"));
+        } else if (!chdir(args[1])) {
+          char buffer1[MAX_BUFFER];
+          getcwd(args[1], MAX_BUFFER);
+          snprintf(buffer1, MAX_BUFFER, "%s%s", "PWD=", args[1]);
+          putenv(buffer1);
+        } else {
+          fprintf(stderr, "Invalid path for chdir\n");
+        }
+        continue;
+      }
+
+      //environ
+      //Code for this case provided by instructor on website
+      if (!strcmp(args[0],"environ")) // "environment" command
+
+      {
+        char **env = environ;
+
+        while (*env) printf("%s\n",*env++);  // step through environment
+        continue;
+      }
+
+      // else pass command onto OS
+      fflush(stdout);
+      system(bufcopy);
+      fflush(stdout);
 
 
-		}
-		free(bufcopy); //Free buf copy after potentially passing it to system
-	}
-	}
-	return 0;
+    }
+    free(bufcopy); //Free buf copy after potentially passing it to system
+  }
+  }
+  return 0;
+}
+
+//Executes file operation, morph, mimic, remove etc, based on files in fileops
+//and based on fileops->op
+int dofileoperation(filemanip *fileops ) {
+
+  if ( ((fileops->op & MORPH) == MORPH) ||
+      ((fileops->op & MIMIC) == MIMIC)) {
+
+    unsigned int src_flags = O_RDONLY;
+    unsigned int dst_flags = O_CREAT | O_WRONLY | O_TRUNC;
+    unsigned int dst_perms = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH; // rw-rw-rw-
+
+    int src_fd = open(fileops->src, src_flags);
+    if (src_fd == -1) {
+      if (fileops->op & MIMIC) {
+        syserrmsg("mimic [src]", NULL);
+        return EXIT_FAILURE;
+      }
+      else {
+        syserrmsg("mimic [src]", NULL);
+        return EXIT_FAILURE;
+      }
+    }
+
+    // Check to make sure that the src and dest are correct
+    int is_src_dir = is_directory(fileops->src);
+    if (is_src_dir) {
+      syserrmsg("[src] is a directory, this operation is not supported", NULL);
+      return EXIT_FAILURE;
+    }
+
+    int is_dst_dir = is_directory(fileops->dst);
+
+    // If the dst is a file, that will be the file name
+
+    // If the dst is a valid directory, give the dst the file name of the src
+    if (is_dst_dir) {
+      char dst_name[MAX_FILENAME/2];
+      char dst_path[MAX_FILENAME/2];
+      char dst_dir[MAX_FILENAME/2];
+
+      // Get the name from src
+      strcpy(dst_name,basename(fileops->src));
+
+      // The last folder name
+      strcpy(dst_dir, basename(fileops->dst));
+
+      // Get the path from dst
+      strcpy(dst_path, dirname(fileops->dst));
+
+      // concatenate the new file together
+      fileops->dst[0] = '\0'; // zero out the string
+      strcat(fileops->dst, dst_path);
+      strcat(fileops->dst, "/");
+      strcat(fileops->dst, dst_dir);
+      strcat(fileops->dst, "/");
+      strcat(fileops->dst, dst_name);
+    }
+
+    int dst_fd = open(fileops->dst, dst_flags, dst_perms);
+    if (dst_fd == -1) {
+      if (fileops->op & MIMIC) {
+        syserrmsg("mimic [dst]", NULL);
+        return EXIT_FAILURE;
+      }
+      else {
+        syserrmsg("mimic [dst]", NULL);
+        return EXIT_FAILURE;
+      }
+    }
+
+    ssize_t num_read;
+    char buf[MAX_BUFFER];
+    while ((num_read = read(src_fd, buf, MAX_BUFFER)) > 0) {
+      if (write(dst_fd, buf, num_read) != num_read) {
+        if (fileops->op & MIMIC) {
+          syserrmsg("mimic write error", NULL);
+          return EXIT_FAILURE;
+        }
+        else {
+          syserrmsg("morph write error", NULL);
+          return EXIT_FAILURE;
+        }
+      }
+    }
+    if (num_read == -1) {
+      if (fileops->op & MIMIC) {
+        syserrmsg("mimic error reading", NULL);
+        return EXIT_FAILURE;
+      }
+      else { syserrmsg("morph error reading", NULL);
+        return EXIT_FAILURE;
+      }
+    }
+
+    if (close(src_fd) == -1) {
+      if (fileops->op & MIMIC) {
+        syserrmsg("mimic: Error closing [src] file", NULL);
+        return EXIT_FAILURE;
+      }
+      else {
+        syserrmsg("morph: Error closing [src] file", NULL);
+        return EXIT_FAILURE;
+      }
+    }
+    if (close(dst_fd) == -1) {
+      if (fileops->op & MIMIC) {
+        syserrmsg("mimic: Error closing [dst] file", NULL);
+        return EXIT_FAILURE;
+      }
+      else {
+        syserrmsg("mimic: Error closing [dst] file", NULL);
+        return EXIT_FAILURE;
+      }
+    }
+  }
+
+  // Check to see if the file needs to be removed
+  // This happenes in the morph and erase case
+  if ( ((fileops->op & MORPH) == MORPH) ||
+      ((fileops->op & ERASE) == ERASE)) {
+
+    // Removes file or directory
+    // https://linux.die.net/man/3/remove
+    if (remove(fileops->src)) {
+      if ((fileops->op & MORPH) == MORPH) {
+        syserrmsg("morph", NULL);
+        return EXIT_FAILURE;
+      }
+      else {
+        syserrmsg("erase", NULL);
+        return EXIT_FAILURE;
+      }
+    }
+  }
+
+  return EXIT_SUCCESS;
+}
+
+// Check if a file is a directory
+int is_directory(const char *path) {
+  struct stat statbuf;
+  if (stat(path, &statbuf) != 0)
+    return 0;
+  return S_ISDIR(statbuf.st_mode);
 }
