@@ -41,6 +41,7 @@ environ - displays current environment
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <libgen.h>
 
 //Definitions
 #define MAX_BUFFER 1024                        // max line buffer
@@ -58,10 +59,14 @@ struct filemanip_st {
   unsigned int op; // 0 = erase; 1 = mimic; 2 = morph;
 };
 typedef struct filemanip_st filemanip;
+filemanip fileops; //Global fileops struct for use with morph/mimic operations
 
 //Helper Funcitons
 int is_directory(const char *path); // Checks for directory
 int dofileoperation(filemanip *); // perform file operations
+void syserrmsg(const char * msg, void * ptr);
+char * basename(char * str);
+char * dirname(char * str);
 
 //External vars
 extern char **environ;                   // environment array
@@ -177,7 +182,7 @@ int main (int argc, char ** argv)
             strcpy(fileops.src, args[1]);
             strcpy(fileops.dst, args[2]);
             fileops.op = MIMIC;
-            dofileoperation(args, &fileops);
+            dofileoperation(&fileops);
           }
         }
 
@@ -190,7 +195,7 @@ int main (int argc, char ** argv)
             strcpy(fileops.src, args[1]);
             strcpy(fileops.dst, args[2]);
             fileops.op = MORPH;
-            dofileoperation(args, &fileops);
+            dofileoperation(&fileops);
           }
         }
 
@@ -203,7 +208,7 @@ int main (int argc, char ** argv)
           else {
             strcpy(fileops.src, args[1]);
             fileops.op = ERASE;
-            dofileoperation(args, &fileops);
+            dofileoperation(&fileops);
           }
           continue;
         }
@@ -295,7 +300,7 @@ int dofileoperation(filemanip *fileops ) {
         return EXIT_FAILURE;
       }
       else {
-        syserrmsg("mimic [src]", NULL);
+        syserrmsg("morph [src]", NULL);
         return EXIT_FAILURE;
       }
     }
@@ -391,7 +396,7 @@ int dofileoperation(filemanip *fileops ) {
         return EXIT_FAILURE;
       }
     }
-  }
+  } //End if case that executes for morph, mimic flags
 
   // Check to see if the file needs to be removed
   // This happenes in the morph and erase case
@@ -421,4 +426,11 @@ int is_directory(const char *path) {
   if (stat(path, &statbuf) != 0)
     return 0;
   return S_ISDIR(statbuf.st_mode);
+}
+
+// Error message helper method
+void syserrmsg(const char * msg, const char * msg2) {
+  fprintf(stderr, msg);
+  if (msg2)
+    fprintf(stderr, msg2);
 }
