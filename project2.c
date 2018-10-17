@@ -64,7 +64,7 @@ filemanip fileops; //Global fileops struct for use with morph/mimic operations
 //Helper Funcitons
 int is_directory(const char *path); // Checks for directory
 int dofileoperation(filemanip *); // perform file operations
-void syserrmsg(const char * msg, void * ptr);
+void syserrmsg(const char * msg, const char * msg2);
 char * basename(char * str);
 char * dirname(char * str);
 
@@ -430,7 +430,7 @@ int is_directory(const char *path) {
 
 // Error message helper method
 void syserrmsg(const char * msg, const char * msg2) {
-  fprintf(stderr, msg);
+  fprintf(stderr, "%s\n", msg);
   if (msg2)
-    fprintf(stderr, msg2);
+    fprintf(stderr, "%s\n", msg2);
 }
