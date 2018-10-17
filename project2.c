@@ -29,7 +29,14 @@ ditto - prints following arguements to stdout
 
 environ - displays current environment
 
-//test
+mimic - copies files or directories from one location
+to another -r flag will make it recursive
+
+morph - like mimic but erases old files and directories
+-r flag will make it recursive
+
+erase - erases src directory or file,
+-r flag will make it recursive
 
 */
 
@@ -51,12 +58,13 @@ environ - displays current environment
 #define ERASE 1
 #define MIMIC 2
 #define MORPH 4
+#define RECUR 8
 
 //Structures
 struct filemanip_st {
   char src[MAX_FILENAME]; // This is the source file or the only file in case of an erase;
   char dst[MAX_FILENAME];
-  unsigned int op; // 0 = erase; 1 = mimic; 2 = morph;
+  unsigned int op; // 0 = erase; 1 = mimic; 2 = morph; 3 = recursive
 };
 typedef struct filemanip_st filemanip;
 filemanip fileops; //Global fileops struct for use with morph/mimic operations
@@ -90,14 +98,12 @@ int main (int argc, char ** argv)
     } //Batchfile now set as stdin
   }
 
-
-
   // keep reading input until "quit" command or eof of redirected input
 
   while (!feof(stdin)) {
     // get command line from input
 
-    fputs (prompt, stdout); // write prompt TODO: Add FILE NAME TO PROMPT
+    fprintf(stdout,"%s%s", getenv("PWD"), prompt); // write prompt
 
     if (fgets (buf, MAX_BUFFER, stdin ))
     { // read a line
@@ -179,11 +185,20 @@ int main (int argc, char ** argv)
             syserrmsg("error mimic takes two or three parameters", NULL);
           }
           else {
-            strcpy(fileops.src, args[1]);
-            strcpy(fileops.dst, args[2]);
-            fileops.op = MIMIC;
-            dofileoperation(&fileops);
+            if (args[1] == "-r") {
+              strcpy(fileops.src, args[2]);
+              strcpy(fileops.dst, args[3]);
+              fileops.op = MIMIC | RECUR;
+              dofileoperation(&fileops);
+            }
+            else { //If incorrect parameters are passed, dofileops will fail
+              strcpy(fileops.src, args[1]);
+              strcpy(fileops.dst, args[2]);
+              fileops.op = MIMIC;
+              dofileoperation(&fileops);
+            }
           }
+          continue;
         }
 
         //morph
@@ -192,23 +207,39 @@ int main (int argc, char ** argv)
             syserrmsg("error morph takes two or three parameters", NULL);
           }
           else {
-            strcpy(fileops.src, args[1]);
-            strcpy(fileops.dst, args[2]);
-            fileops.op = MORPH;
-            dofileoperation(&fileops);
+            if (args[1] == "-r") {
+              strcpy(fileops.src, args[2]);
+              strcpy(fileops.dst, args[3]);
+              fileops.op = MORPH | RECUR;
+              dofileoperation(&fileops);
+            }
+            else { //If incorrect parameters are passed, dofileops will fail
+              strcpy(fileops.src, args[1]);
+              strcpy(fileops.dst, args[2]);
+              fileops.op = MORPH | RECUR;
+              dofileoperation(&fileops);
+            }
           }
+          continue;
         }
 
         //erase
         if (!strcmp(args[0], "erase")) //"rm" command
         {
           if (!args[1]) {
-            syserrmsg("error erase takes one parameter", NULL);
+            syserrmsg("error erase takes one or two parameters", NULL);
           }
           else {
-            strcpy(fileops.src, args[1]);
-            fileops.op = ERASE;
-            dofileoperation(&fileops);
+            if (args[1] == "-r") {
+              strcpy(fileops.src, args[2]);
+              fileops.op = ERASE | RECUR;
+              dofileoperation(&fileops);
+            }
+            else { //If incorrect parameters are passed, dofileops will fail
+              strcpy(fileops.src, args[1]);
+              fileops.op = ERASE;
+              dofileoperation(&fileops);
+            }
           }
           continue;
         }
@@ -229,7 +260,6 @@ int main (int argc, char ** argv)
             system("ls -1");
             fflush(stdout);
           }
-
           continue;
         }
 
@@ -314,7 +344,7 @@ int dofileoperation(filemanip *fileops ) {
 
     int is_dst_dir = is_directory(fileops->dst);
 
-    // If the dst is a file, that will be the file name
+    // If the dst is a file, that will be the new file name
 
     // If the dst is a valid directory, give the dst the file name of the src
     if (is_dst_dir) {
@@ -340,6 +370,7 @@ int dofileoperation(filemanip *fileops ) {
       strcat(fileops->dst, dst_name);
     }
 
+    //Open dst_fd
     int dst_fd = open(fileops->dst, dst_flags, dst_perms);
     if (dst_fd == -1) {
       if (fileops->op & MIMIC) {
@@ -347,11 +378,12 @@ int dofileoperation(filemanip *fileops ) {
         return EXIT_FAILURE;
       }
       else {
-        syserrmsg("mimic [dst]", NULL);
+        syserrmsg("morph [dst]", NULL);
         return EXIT_FAILURE;
       }
     }
 
+    //Copy from src to dst
     ssize_t num_read;
     char buf[MAX_BUFFER];
     while ((num_read = read(src_fd, buf, MAX_BUFFER)) > 0) {
@@ -376,6 +408,7 @@ int dofileoperation(filemanip *fileops ) {
       }
     }
 
+    //Close src and dst file descriptors
     if (close(src_fd) == -1) {
       if (fileops->op & MIMIC) {
         syserrmsg("mimic: Error closing [src] file", NULL);
