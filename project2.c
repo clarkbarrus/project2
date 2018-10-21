@@ -371,7 +371,7 @@ int dofileoperation(filemanip *fileops ) {
 
     //Open dst_fd
     int dst_fd = open(fileops->dst, dst_flags, dst_perms);
-    syserrmsg("Successfully called open() in dst", "i");
+    syserrmsg("Successfully called open() in dst", NULL);
     if (dst_fd == -1) {
       if (fileops->op & MIMIC) {
         syserrmsg("mimic [dst]", NULL);
@@ -388,7 +388,8 @@ int dofileoperation(filemanip *fileops ) {
       syserrmsg("Fileops: Entered src is dir branch", NULL);
       //If directory is empty make a new directory in dst
       int n;
-      if (n = is_directory_empty(fileops->src) == EXIT_FAILURE) {
+      if ((n = is_directory_empty(fileops->src)) == EXIT_FAILURE) {
+        syserrmsg("is_directory_empty failed", NULL);
         return EXIT_FAILURE;
       }
       if (n == 1) {
@@ -404,10 +405,15 @@ int dofileoperation(filemanip *fileops ) {
         syserrmsg("src is not an empty directory", NULL);
         //If -r flag then recursively morph, else fail
       }
+      else {
+        //Test branch, should not reach this one
+        syserrmsg("is_directory_empty returning unexpected behavior", NULL);
+      }
     }
 
     //Src is a file
     else {
+      syserrmsg("Fileops: entered src is file branch", NULL);
       //Copy from src file to dst file
       ssize_t num_read;
       char buf[MAX_BUFFER];
