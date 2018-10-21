@@ -75,8 +75,7 @@ int is_directory(const char *path); // Checks for directory
 int is_directory_empty(char * path); // Checks the a directory is empty
 int dofileoperation(filemanip *); // perform file operations
 void syserrmsg(const char * msg, const char * msg2);
-char * basename(char * str);
-char * dirname(char * str);
+
 
 //External vars
 extern char **environ;                   // environment array
@@ -134,10 +133,12 @@ int main (int argc, char ** argv)
         //mkdirz
         if (!strcmp(args[0],"mkdirz"))  // "mkdir" command
         {
-          if (!args[1]) //Check that an arugement was given
+          if (!args[1]) //Check that an argument was given
           {
+            //rwxrwxrw-
+            unsigned int dst_perms = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | S_IXGRP; // rwxrwxrw-
             //Make the directory
-            if(mkdir(args[1], dst_perms | S_IXUSR | S_IXGRP)) { //Add permissions to directory
+            if(mkdir(args[1], dst_perms)) {
               //Error checking
               syserrmsg("mkdirz error", NULL);
               perror(NULL);
