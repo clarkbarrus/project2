@@ -390,6 +390,7 @@ int dofileoperation(filemanip *fileops ) {
       int n;
       if ((n = is_directory_empty(fileops->src)) == EXIT_FAILURE) {
         syserrmsg("is_directory_empty failed", NULL);
+        fputs(EXIT_FAILURE); //ERASE ME
         return EXIT_FAILURE;
       }
       if (n == 1) {
@@ -511,10 +512,14 @@ int is_directory_empty(char * path) {
       break;
   }
   closedir(dir);
-  if (n <= 2) //Directory Empty, keeping in mind . and ..
+  if (n <= 2) {//Directory Empty, keeping in mind . and ..
+    syserrmsg("is_directory_empty returned true", NULL);
     return 1; //True
-  else
+  }
+  else {
+    syserrmsg("is_directory_empty returned false", NULL);
     return 0; //False
+  }
 }
 
 // Error message helper method
