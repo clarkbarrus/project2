@@ -325,18 +325,6 @@ int dofileoperation(filemanip *fileops ) {
     unsigned int dst_flags = O_CREAT | O_WRONLY | O_TRUNC;
     unsigned int dst_perms = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH; // rw-rw-rw-
 
-    int src_fd = open(fileops->src, src_flags);
-    if (src_fd == -1) {
-      if (fileops->op & MIMIC) {
-        syserrmsg("mimic [src]", NULL);
-        return EXIT_FAILURE;
-      }
-      else {
-        syserrmsg("morph [src]", NULL);
-        return EXIT_FAILURE;
-      }
-    }
-
     // Check to make sure that the src and dest are correct
     int is_src_dir = is_directory(fileops->src);
 
@@ -369,20 +357,6 @@ int dofileoperation(filemanip *fileops ) {
       strcat(fileops->dst, dst_name);
     }
 
-    //Open dst_fd
-    int dst_fd = open(fileops->dst, dst_flags, dst_perms);
-    syserrmsg("Successfully called open() in dst", NULL);
-    if (dst_fd == -1) {
-      if (fileops->op & MIMIC) {
-        syserrmsg("mimic [dst]", NULL);
-        return EXIT_FAILURE;
-      }
-      else {
-        syserrmsg("morph [dst]", NULL);
-        return EXIT_FAILURE;
-      }
-    }
-
     //Src is a directory
     if (is_src_dir) {
       syserrmsg("Fileops: Entered src is dir branch", NULL);
@@ -411,11 +385,40 @@ int dofileoperation(filemanip *fileops ) {
         //Test branch, should not reach this one
         syserrmsg("is_directory_empty returning unexpected behavior", NULL);
       }
-    }
+    } //End of src is dir case
 
-    //Src is a file
+    //Src is a file case
     else {
-      syserrmsg("Fileops: entered src is file branch", NULL);
+      //syserrmsg("Fileops: entered src is file branch", NULL);
+
+      //Open src for reading
+      int src_fd = open(fileops->src, src_flags);
+      if (src_fd == -1) {
+        if (fileops->op & MIMIC) {
+          syserrmsg("mimic [src]", NULL);
+          return EXIT_FAILURE;
+        }
+        else {
+          syserrmsg("morph [src]", NULL);
+          return EXIT_FAILURE;
+        }
+      }
+
+      //Open dst_fd for writing
+      int dst_fd = open(fileops->dst, dst_flags, dst_perms);
+      //syserrmsg("Successfully called open() in dst", NULL);
+
+      if (dst_fd == -1) {
+        if (fileops->op & MIMIC) {
+          syserrmsg("mimic [dst]", NULL);
+          return EXIT_FAILURE;
+        }
+        else {
+          syserrmsg("morph [dst]", NULL);
+          return EXIT_FAILURE;
+        }
+      }
+
       //Copy from src file to dst file
       ssize_t num_read;
       char buf[MAX_BUFFER];
@@ -440,31 +443,32 @@ int dofileoperation(filemanip *fileops ) {
           return EXIT_FAILURE;
         }
       }
-    }
 
+      //close dst file descriptor
+      if (close(dst_fd) == -1) {
+        if (fileops->op & MIMIC) {
+          syserrmsg("mimic: Error closing [dst] file", NULL);
+          return EXIT_FAILURE;
+        }
+        else {
+          syserrmsg("mimic: Error closing [dst] file", NULL);
+          return EXIT_FAILURE;
+        }
+      }
 
+      //Close src file descriptors
+      if (close(src_fd) == -1) {
+        if (fileops->op & MIMIC) {
+          syserrmsg("mimic: Error closing [src] file", NULL);
+          return EXIT_FAILURE;
+        }
+        else {
+          syserrmsg("morph: Error closing [src] file", NULL);
+          return EXIT_FAILURE;
+        }
+      }
+    } //End of src is file case
 
-    //Close src and dst file descriptors
-    if (close(src_fd) == -1) {
-      if (fileops->op & MIMIC) {
-        syserrmsg("mimic: Error closing [src] file", NULL);
-        return EXIT_FAILURE;
-      }
-      else {
-        syserrmsg("morph: Error closing [src] file", NULL);
-        return EXIT_FAILURE;
-      }
-    }
-    if (close(dst_fd) == -1) {
-      if (fileops->op & MIMIC) {
-        syserrmsg("mimic: Error closing [dst] file", NULL);
-        return EXIT_FAILURE;
-      }
-      else {
-        syserrmsg("mimic: Error closing [dst] file", NULL);
-        return EXIT_FAILURE;
-      }
-    }
   } //End if case that executes for morph, mimic flags
 
   // Check to see if the file needs to be removed
