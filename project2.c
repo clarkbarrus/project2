@@ -443,6 +443,7 @@ int dofileoperation(filemanip *fileops ) {
 
               //newfilemanip.src = fileops->src + dirent->d_name
               strcpy(newfilemanip.src, fileops->src);
+              strcat(newfilemanip.src, "/");
               strcat(newfilemanip.src, entry->d_name);
 
               //Destination is newly created directory at dst
@@ -455,11 +456,12 @@ int dofileoperation(filemanip *fileops ) {
             //Prep for next file entry
             entry = readdir(src_dirp);
           }
-
+          closedir(src_dirp);
         }
         else { //Fail, since not recursive
           syserrmsg("src is not an empty directory", NULL);
         }
+
       }
     } //End of src is dir case
 
