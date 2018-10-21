@@ -49,6 +49,7 @@ erase - erases src directory or file,
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include <dirent.h>
 
 //Definitions
 #define MAX_BUFFER 1024                        // max line buffer
@@ -71,6 +72,7 @@ filemanip fileops; //Global fileops struct for use with morph/mimic operations
 
 //Helper Funcitons
 int is_directory(const char *path); // Checks for directory
+int is_directory_empty(char * path); // Checks the a directory is empty
 int dofileoperation(filemanip *); // perform file operations
 void syserrmsg(const char * msg, const char * msg2);
 char * basename(char * str);
@@ -337,10 +339,6 @@ int dofileoperation(filemanip *fileops ) {
 
     // Check to make sure that the src and dest are correct
     int is_src_dir = is_directory(fileops->src);
-    if (is_src_dir) {
-      syserrmsg("[src] is a directory, this operation is not supported", NULL);
-      return EXIT_FAILURE;
-    }
 
     int is_dst_dir = is_directory(fileops->dst);
 
@@ -383,30 +381,62 @@ int dofileoperation(filemanip *fileops ) {
       }
     }
 
-    //Copy from src to dst
-    ssize_t num_read;
-    char buf[MAX_BUFFER];
-    while ((num_read = read(src_fd, buf, MAX_BUFFER)) > 0) {
-      if (write(dst_fd, buf, num_read) != num_read) {
+    //Src is a directory
+    if (is_src_dir) {
+      DIR * src_dirp fdopendir(src_fd);
+      if (!src_DIR)
+      {
+        syserrmsg("src_dirp open error", NULL);
+        return EXIT_FAILURE;
+      }
+      //If directory is empty make a new directory in dst
+      int n;
+      if (n = is_directory_empty(fileops->src) == EXIT_FAILURE)
+      {
+        return EXIT_FAILURE
+      }
+      if (n == 1) {
+        //Since directory is empty, create new directory at dst
+        if(mkdir(fileops->dst, dst_perms) {
+          syserrmsg("dir create error", NULL)
+        }
+      }
+      else if (n == 0) {
+        //Directory is not Empty
+        syserrmsg("src is not an empty directory", NULL);
+        //If -r flag then recursively morph, else fail
+      }
+    }
+
+    //Src is a file
+    else {
+      //Copy from src file to dst file
+      ssize_t num_read;
+      char buf[MAX_BUFFER];
+      while ((num_read = read(src_fd, buf, MAX_BUFFER)) > 0) {
+        if (write(dst_fd, buf, num_read) != num_read) {
+          if (fileops->op & MIMIC) {
+            syserrmsg("mimic write error", NULL);
+            return EXIT_FAILURE;
+          }
+          else {
+            syserrmsg("morph write error", NULL);
+            return EXIT_FAILURE;
+          }
+        }
+      }
+      if (num_read == -1) {
         if (fileops->op & MIMIC) {
-          syserrmsg("mimic write error", NULL);
+          syserrmsg("mimic error reading", NULL);
           return EXIT_FAILURE;
         }
-        else {
-          syserrmsg("morph write error", NULL);
+        else { syserrmsg("morph error reading", NULL);
           return EXIT_FAILURE;
         }
       }
     }
-    if (num_read == -1) {
-      if (fileops->op & MIMIC) {
-        syserrmsg("mimic error reading", NULL);
-        return EXIT_FAILURE;
-      }
-      else { syserrmsg("morph error reading", NULL);
-        return EXIT_FAILURE;
-      }
-    }
+
+
 
     //Close src and dst file descriptors
     if (close(src_fd) == -1) {
@@ -457,8 +487,30 @@ int dofileoperation(filemanip *fileops ) {
 int is_directory(const char *path) {
   struct stat statbuf;
   if (stat(path, &statbuf) != 0)
-    return 0;
-  return S_ISDIR(statbuf.st_mode);
+    return 0; //Failed, can check errno
+  return S_ISDIR(statbuf.st_mode); //Returns true/false for isdir
+}
+
+//Check if directory is empty
+//Based on https://stackoverflow.com/questions/6383584/check-if-a-directory-is-empty-using-c-on-linux
+int is_directory_empty(char * path) {
+  int n = 0;
+  struct dirent *d;
+  DIR *dir = opendir(path);
+  if (dir == NULL) { //Not a directory or doesn't exist
+    syserrmsg("is_directory_empty opendir() error", NULL);
+    return EXIT_FAILURE;
+  }
+
+  while ((d = readdir(dir)) != NULL) {
+    if(++n > 2)
+      break;
+  }
+  closedir(dir);
+  if (n <= 2) //Directory Empty, keeping in mind . and ..
+    return 1; //True
+  else
+    return 0; //False
 }
 
 // Error message helper method
