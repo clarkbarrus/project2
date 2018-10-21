@@ -152,7 +152,23 @@ int main (int argc, char ** argv)
         }
 
         //rmdirz
-
+        if (!strcmp(args[0],"rmdirz"))  // "rmdir" command
+        {
+          if (args[1]) //Check that an argument was given
+          {
+            if(rmdir(args[1])) {
+              //Error checking
+              syserrmsg("rmdirz error", NULL);
+              perror(NULL);
+            }
+          }
+          else //No arguement given
+          {
+            syserrmsg("rmdirz takes one arguement", NULL);
+          }
+          continue;
+        }
+        
         //wipe
         if (!strcmp(args[0],"wipe"))  // "clear" command
         {
