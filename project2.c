@@ -460,6 +460,7 @@ int dofileoperation(filemanip *fileops ) {
         }
         else { //Fail, since not recursive
           syserrmsg("src is not an empty directory", NULL);
+          return EXIT_FAILURE;
         }
 
       }
