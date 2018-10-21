@@ -168,7 +168,7 @@ int main (int argc, char ** argv)
           }
           continue;
         }
-        
+
         //wipe
         if (!strcmp(args[0],"wipe"))  // "clear" command
         {
@@ -397,7 +397,7 @@ int dofileoperation(filemanip *fileops ) {
 
     //Src is a directory
     if (is_src_dir) {
-      syserrmsg("Fileops: Entered src is dir branch", NULL);
+      //syserrmsg("Fileops: Entered src is dir branch", NULL);
 
       //If directory is empty make a new directory in dst
       int n = is_directory_empty(fileops->src);
@@ -406,22 +406,57 @@ int dofileoperation(filemanip *fileops ) {
         return EXIT_FAILURE;
       }
       if (n == 1) {
-        syserrmsg("src dir is empty", NULL);
+        //syserrmsg("src dir is empty", NULL);
         //Since directory is empty, create new directory at dst
         if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) { //Add permissions to directory
           syserrmsg("dir create error", NULL);
           perror(NULL);
+          return EXIT_FAILURE;
         }
-        syserrmsg("Succcessfully called mkdir in dst", NULL);
+        //syserrmsg("Succcessfully called mkdir in dst", NULL);
       }
       else if (n == 0) {
         //Directory is not Empty
-        syserrmsg("src is not an empty directory", NULL);
-        //If -r flag then recursively morph, else fail
-      }
-      else {
-        //Test branch, should not reach this one
-        syserrmsg("is_directory_empty returning unexpected behavior", NULL);
+        if(fileops->ops & RECUR) { //Copy contents recursively
+          syserrmsg("src is a directory, copy recursively");
+
+          //Create new directory
+          if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) {
+            syserrmsg("dir create error", NULL);
+            perror(NULL);
+            return EXIT_FAILURE;
+          }
+
+          //Open dir
+          DIR * src_dirp opendir(fileops->src);
+
+          struct dirent * entry = readdir(src_dirp);
+          while(dirent != NULL) {
+            //Read dirent. If . or .. ignore and move on.
+            if (dirent->d_name == "." || dirent->d_name == "..") {
+              //Don't do anything for . and .. files
+            }
+            else {
+              //Set up and call dofileoperation
+              filemanip newfilemanip;
+              newfilemanip.ops = fileops->ops;
+
+              //newfilemanip.src = fileops->src + dirent->d_name
+              strcpy(newfilemanip.src, fileops->src));
+              strcat(newfilemanip.src, dirent->d_name);
+
+              //Destination is newly created directory at dst
+              strcpy(newfilemanip.dst, fileops->dst);
+
+              //Call dofileoperation
+              dofileoperation(&newfilemanip);
+            }
+          }
+
+        }
+        else { //Fail, since not recursive
+          syserrmsg("src is not an empty directory", NULL);
+        }
       }
     } //End of src is dir case
 
