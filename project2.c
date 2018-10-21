@@ -346,6 +346,7 @@ int dofileoperation(filemanip *fileops ) {
 
     // If the dst is a valid directory, give the dst the file name of the src
     if (is_dst_dir) {
+      syserrmsg("Fileops: entered dst is dir branch", NULL);
       char dst_name[MAX_FILENAME/2];
       char dst_path[MAX_FILENAME/2];
       char dst_dir[MAX_FILENAME/2];
@@ -370,6 +371,7 @@ int dofileoperation(filemanip *fileops ) {
 
     //Open dst_fd
     int dst_fd = open(fileops->dst, dst_flags, dst_perms);
+    syserrmsg("Successfully called open() in dst", "i")
     if (dst_fd == -1) {
       if (fileops->op & MIMIC) {
         syserrmsg("mimic [dst]", NULL);
@@ -383,17 +385,19 @@ int dofileoperation(filemanip *fileops ) {
 
     //Src is a directory
     if (is_src_dir) {
+      syserrmsg("Fileops: Entered src is dir branch", NULL);
       //If directory is empty make a new directory in dst
       int n;
       if (n = is_directory_empty(fileops->src) == EXIT_FAILURE) {
         return EXIT_FAILURE;
       }
       if (n == 1) {
+        syserrmsg("src dir is empty", NULL);
         //Since directory is empty, create new directory at dst
         if(mkdir(fileops->dst, dst_perms)) {
           syserrmsg("dir create error", NULL);
         }
-        syserrmsg("Succcessfully called mkdir", NULL);
+        syserrmsg("Succcessfully called mkdir in dst", NULL);
       }
       else if (n == 0) {
         //Directory is not Empty
