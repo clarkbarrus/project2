@@ -133,7 +133,7 @@ int main (int argc, char ** argv)
         //mkdirz
         if (!strcmp(args[0],"mkdirz"))  // "mkdir" command
         {
-          if (!args[1]) //Check that an argument was given
+          if (args[1]) //Check that an argument was given
           {
             //rwxrwxrw-
             unsigned int dst_perms = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | S_IXGRP; // rwxrwxrw-
