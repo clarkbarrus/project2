@@ -406,14 +406,14 @@ int dofileoperation(filemanip *fileops ) {
         return EXIT_FAILURE;
       }
       if (n == 1) {
-        //syserrmsg("src dir is empty", NULL);
+        syserrmsg("src dir is empty", NULL);
         //Since directory is empty, create new directory at dst
         if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) { //Add permissions to directory
           syserrmsg("dir create error", NULL);
           perror(NULL);
           return EXIT_FAILURE;
         }
-        //syserrmsg("Succcessfully called mkdir in dst", NULL);
+        syserrmsg("Succcessfully called mkdir in dst", NULL);
       }
       else if (n == 0) {
         //Directory is not Empty
@@ -431,7 +431,7 @@ int dofileoperation(filemanip *fileops ) {
           DIR * src_dirp = opendir(fileops->src);
 
           struct dirent * entry = readdir(src_dirp);
-          while(entry != NULL) {
+          while(entry != NULL) { //Loop for all files in directory
             //Read dirent. If . or .. ignore and move on.
             if (entry->d_name == "." || entry->d_name == "..") {
               //Don't do anything for . and .. files
@@ -451,6 +451,9 @@ int dofileoperation(filemanip *fileops ) {
               //Call dofileoperation
               dofileoperation(&newfilemanip);
             }
+
+            //Prep for next file entry
+            entry = readdir(src_dirp);
           }
 
         }
