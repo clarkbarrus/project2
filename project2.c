@@ -398,6 +398,7 @@ int dofileoperation(filemanip *fileops ) {
         //Since directory is empty, create new directory at dst
         if(mkdir(fileops->dst, dst_perms)) {
           syserrmsg("dir create error", NULL);
+          perror(NULL);
         }
         syserrmsg("Succcessfully called mkdir in dst", NULL);
       }
