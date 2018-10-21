@@ -386,9 +386,10 @@ int dofileoperation(filemanip *fileops ) {
     //Src is a directory
     if (is_src_dir) {
       syserrmsg("Fileops: Entered src is dir branch", NULL);
+
       //If directory is empty make a new directory in dst
-      int n;
-      if ((n = is_directory_empty(fileops->src)) == EXIT_FAILURE) {
+      int n = is_directory_empty(fileops->src));
+      if ((n == -1) {
         syserrmsg("is_directory_empty failed", NULL);
         return EXIT_FAILURE;
       }
@@ -503,7 +504,7 @@ int is_directory_empty(char * path) {
   DIR *dir = opendir(path);
   if (dir == NULL) { //Not a directory or doesn't exist
     syserrmsg("is_directory_empty opendir() error", NULL);
-    return EXIT_FAILURE;
+    return -1;
   }
 
   while ((d = readdir(dir)) != NULL) {
