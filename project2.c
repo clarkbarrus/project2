@@ -393,6 +393,7 @@ int dofileoperation(filemanip *fileops ) {
         if(mkdir(fileops->dst, dst_perms)) {
           syserrmsg("dir create error", NULL);
         }
+        syserrmsg("Succcessfully called mkdir", NULL);
       }
       else if (n == 0) {
         //Directory is not Empty
