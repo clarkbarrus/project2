@@ -371,7 +371,7 @@ int dofileoperation(filemanip *fileops ) {
 
     //Open dst_fd
     int dst_fd = open(fileops->dst, dst_flags, dst_perms);
-    syserrmsg("Successfully called open() in dst", "i")
+    syserrmsg("Successfully called open() in dst", "i");
     if (dst_fd == -1) {
       if (fileops->op & MIMIC) {
         syserrmsg("mimic [dst]", NULL);
