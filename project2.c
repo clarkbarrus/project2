@@ -417,7 +417,7 @@ int dofileoperation(filemanip *fileops ) {
       }
       else if (n == 0) {
         //Directory is not Empty
-        if(fileops->op & RECUR) { //Copy contents recursively
+        if(!(fileops->op & RECUR)) { //Copy contents recursively
           syserrmsg("src is a directory, copy recursively", NULL);
 
           //Create new directory
