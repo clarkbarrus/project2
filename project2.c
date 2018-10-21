@@ -388,8 +388,8 @@ int dofileoperation(filemanip *fileops ) {
       syserrmsg("Fileops: Entered src is dir branch", NULL);
 
       //If directory is empty make a new directory in dst
-      int n = is_directory_empty(fileops->src));
-      if ((n == -1) {
+      int n = is_directory_empty(fileops->src);
+      if (n == -1) {
         syserrmsg("is_directory_empty failed", NULL);
         return EXIT_FAILURE;
       }
