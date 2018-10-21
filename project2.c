@@ -131,6 +131,27 @@ int main (int argc, char ** argv)
       if (args[0]){
         // check for internal/external command
 
+        //mkdirz
+        if (!strcmp(args[0],"mkdirz"))  // "mkdir" command
+        {
+          if (!args[1]) //Check that an arugement was given
+          {
+            //Make the directory
+            if(mkdir(args[1], dst_perms | S_IXUSR | S_IXGRP)) { //Add permissions to directory
+              //Error checking
+              syserrmsg("mkdirz error", NULL);
+              perror(NULL);
+            }
+          }
+          else //No arguement given
+          {
+            syserrmsg("mkdirz takes one arguement", NULL);
+          }
+          continue;
+        }
+
+        //rmdirz
+
         //wipe
         if (!strcmp(args[0],"wipe"))  // "clear" command
         {
@@ -330,7 +351,6 @@ int dofileoperation(filemanip *fileops ) {
 
     int is_dst_dir = is_directory(fileops->dst);
 
-    // If the dst is a file, that will be the new file name
 
     // If the dst is a valid directory, give the dst the file name of the src
     if (is_dst_dir) {
@@ -357,6 +377,7 @@ int dofileoperation(filemanip *fileops ) {
       strcat(fileops->dst, dst_name);
     }
 
+
     //Src is a directory
     if (is_src_dir) {
       syserrmsg("Fileops: Entered src is dir branch", NULL);
@@ -370,7 +391,7 @@ int dofileoperation(filemanip *fileops ) {
       if (n == 1) {
         syserrmsg("src dir is empty", NULL);
         //Since directory is empty, create new directory at dst
-        if(mkdir(fileops->dst, dst_perms)) {
+        if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) { //Add permissions to directory
           syserrmsg("dir create error", NULL);
           perror(NULL);
         }
@@ -480,11 +501,11 @@ int dofileoperation(filemanip *fileops ) {
     // https://linux.die.net/man/3/remove
     if (remove(fileops->src)) {
       if ((fileops->op & MORPH) == MORPH) {
-        syserrmsg("morph", NULL);
+        syserrmsg("morph remove error", NULL);
         return EXIT_FAILURE;
       }
       else {
-        syserrmsg("erase", NULL);
+        syserrmsg("erase remove error", NULL);
         return EXIT_FAILURE;
       }
     }
