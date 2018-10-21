@@ -383,21 +383,14 @@ int dofileoperation(filemanip *fileops ) {
 
     //Src is a directory
     if (is_src_dir) {
-      DIR * src_dirp fdopendir(src_fd);
-      if (!src_DIR)
-      {
-        syserrmsg("src_dirp open error", NULL);
-        return EXIT_FAILURE;
-      }
       //If directory is empty make a new directory in dst
       int n;
-      if (n = is_directory_empty(fileops->src) == EXIT_FAILURE)
-      {
-        return EXIT_FAILURE
+      if (n = is_directory_empty(fileops->src) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
       }
       if (n == 1) {
         //Since directory is empty, create new directory at dst
-        if(mkdir(fileops->dst, dst_perms) {
+        if(mkdir(fileops->dst, dst_perms)) {
           syserrmsg("dir create error", NULL)
         }
       }
