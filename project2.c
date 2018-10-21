@@ -417,8 +417,8 @@ int dofileoperation(filemanip *fileops ) {
       }
       else if (n == 0) {
         //Directory is not Empty
-        if(fileops->ops & RECUR) { //Copy contents recursively
-          syserrmsg("src is a directory, copy recursively");
+        if(fileops->op & RECUR) { //Copy contents recursively
+          syserrmsg("src is a directory, copy recursively", NULL);
 
           //Create new directory
           if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) {
@@ -428,22 +428,22 @@ int dofileoperation(filemanip *fileops ) {
           }
 
           //Open dir
-          DIR * src_dirp opendir(fileops->src);
+          DIR * src_dirp = opendir(fileops->src);
 
           struct dirent * entry = readdir(src_dirp);
-          while(dirent != NULL) {
+          while(entry != NULL) {
             //Read dirent. If . or .. ignore and move on.
-            if (dirent->d_name == "." || dirent->d_name == "..") {
+            if (entry->d_name == "." || entry->d_name == "..") {
               //Don't do anything for . and .. files
             }
             else {
               //Set up and call dofileoperation
               filemanip newfilemanip;
-              newfilemanip.ops = fileops->ops;
+              newfilemanip.op = fileops->op;
 
               //newfilemanip.src = fileops->src + dirent->d_name
-              strcpy(newfilemanip.src, fileops->src));
-              strcat(newfilemanip.src, dirent->d_name);
+              strcpy(newfilemanip.src, fileops->src);
+              strcat(newfilemanip.src, entry->d_name);
 
               //Destination is newly created directory at dst
               strcpy(newfilemanip.dst, fileops->dst);
