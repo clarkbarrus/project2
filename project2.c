@@ -390,7 +390,6 @@ int dofileoperation(filemanip *fileops ) {
       int n;
       if ((n = is_directory_empty(fileops->src)) == EXIT_FAILURE) {
         syserrmsg("is_directory_empty failed", NULL);
-        fputs(EXIT_FAILURE); //ERASE ME
         return EXIT_FAILURE;
       }
       if (n == 1) {
