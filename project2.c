@@ -356,10 +356,10 @@ int main (int argc, char ** argv)
             //Io redirection here!
             //Detect, <, >, >> and call appropriate freopen() and remove
             //appropriate args elements from args, and move everything up as needed
-            //syserrmsg("About to execute execvp with args[0]:", args[0]);
             arg = args;
             while (*arg++) { //Increment through args[1] to the final null args[n]
               //Look for <, >, >>
+              syserrmsg("Inside while loop, checking arg:", *arg);
               if (!strcmp(*arg, "<")) {
                 //Arg is pointing to <
                 //Check if arg++ is a valid file for input
@@ -373,14 +373,15 @@ int main (int argc, char ** argv)
                 }
 
                 //Move over the rest of the array, overwriting arg and arg++
-                
+
               }
             }
 
-
+            syserrmsg("About to execute execvp with args[0]:", args[0]);
             execvp (args[0], args);
             syserrmsg("exec error", NULL); //Should not reach this code
             perror(NULL);
+            //End of case 0:
           default:                // parent
             if (!dont_wait)
               waitpid(pid, &status, WUNTRACED);
