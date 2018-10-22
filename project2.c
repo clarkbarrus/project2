@@ -357,7 +357,7 @@ int main (int argc, char ** argv)
             syserrmsg("About to execute execvp with args[0]:", args[0]);
             execvp (args[0], args);
             syserrmsg("exec", NULL); //Should not reach this code
-            perror();
+            perror("Exec error:");
           default:                // parent
             if (!dont_wait)
               waitpid(pid, &status, WUNTRACED);
