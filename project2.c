@@ -354,8 +354,10 @@ int main (int argc, char ** argv)
             syserrmsg("fork", NULL);
           case 0:                 // child
             //Implement io redirection here!
+            syserrmsg("About to execute execvp with args[0]:", args[0]);
             execvp (args[0], args);
             syserrmsg("exec", NULL); //Should not reach this code
+            perror();
           default:                // parent
             if (!dont_wait)
               waitpid(pid, &status, WUNTRACED);
