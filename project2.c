@@ -421,6 +421,7 @@ int dofileoperation(filemanip *fileops ) {
       }
       else if (n == 0) {
         //Directory is not Empty
+        fprintf(stderr, "op: %d, op & RECUR: %d \n", fileops->op, fileops->op & RECUR);
         if(fileops->op & RECUR) { //Copy contents recursively
           syserrmsg("Fileops: entered recursive branch", NULL);
 
@@ -430,6 +431,7 @@ int dofileoperation(filemanip *fileops ) {
             perror(NULL);
             return EXIT_FAILURE;
           }
+          syserrmsg("Created new directory:", fileops->dst);
 
           //Open dir
           DIR * src_dirp = opendir(fileops->src);
@@ -439,6 +441,7 @@ int dofileoperation(filemanip *fileops ) {
             //Read dirent. If . or .. ignore and move on.
             if (strcmp(entry->d_name, ".") || strcmp(entry->d_name, "..")) {
               //Don't do anything for . and .. files
+              syserrmsg("Recognize directory entry as . or ..", NULL);
             }
             else {
               //Set up and call dofileoperation
