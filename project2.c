@@ -341,10 +341,21 @@ int main (int argc, char ** argv)
         continue;
       }
 
-      // else pass command onto OS
-      fflush(stdout);
-      system(bufcopy);
-      fflush(stdout);
+      // else pass command onto OS with fork and exec
+
+      pid_t pid; //pid for fork() call
+      //Fork, pass shell command to child, parent should wait on child to finish
+        switch (pid = fork()) {
+          case -1:
+            //Error in forking
+            syserrmsg("fork", NULL);
+          case 0:                 // child
+            execvp (args[0], args);
+            syserrmsg("exec", NULL);
+          default:                // parent
+            if (!dont_wait)
+              waitpid(pid, &status, WUNTRACED);
+        }
 
 
     }
