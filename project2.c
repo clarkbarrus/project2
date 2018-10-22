@@ -578,7 +578,7 @@ int dofileoperation(filemanip *fileops ) {
 
 // Check if a file is a directory
 int is_directory(const char *path) {
-  syserrmsg("is_directory: is the following is a directory?", NULL);
+  syserrmsg("is_directory: is the following is a directory?", path);
   struct stat statbuf;
   if (stat(path, &statbuf) != 0)
     return 0; //Failed, can check errno
