@@ -435,7 +435,7 @@ int dofileoperation(filemanip *fileops ) {
           struct dirent * entry = readdir(src_dirp);
           while(entry != NULL) { //Loop for all files in directory
             //Read dirent. If . or .. ignore and move on.
-            if (entry->d_name == "." || entry->d_name == "..") {
+            if (strcmp(entry->d_name, ".") || strcmp(entry->d_name, "..")) {
               //Don't do anything for . and .. files
             }
             else {
