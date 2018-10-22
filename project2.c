@@ -357,10 +357,11 @@ int main (int argc, char ** argv)
             //Detect, <, >, >> and call appropriate freopen() and remove
             //appropriate args elements from args, and move everything up as needed
             arg = args;
-            while (*arg++) { //Increment through args[1] to the final null args[n]
+            while (*(++arg) { //Increment through args[1] to the final null args[n]
               //Look for <, >, >>
               syserrmsg("Inside while loop, checking arg:", *arg);
               if (!strcmp(*arg, "<")) {
+                syserrmsg("Detected that arg is <!", NULL);
                 //Arg is pointing to <
                 //Check if arg++ is a valid file for input
                 if(!access(*arg++, F_OK | R_OK)) {
@@ -371,9 +372,7 @@ int main (int argc, char ** argv)
                 else { //Invalid file
                   syserrmsg("Bad file for < redirection", NULL);
                 }
-
                 //Move over the rest of the array, overwriting arg and arg++
-
               }
             }
 
