@@ -373,7 +373,7 @@ int main (int argc, char ** argv)
                 }
 
                 //Move over the rest of the array, overwriting arg and arg++
-                char
+                
               }
             }
 
