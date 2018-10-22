@@ -225,6 +225,7 @@ int main (int argc, char ** argv)
             syserrmsg("error mimic takes two or three parameters", NULL);
           }
           else {
+            fileops.op =  0;
             if (args[1] == "-r") {
               strcpy(fileops.src, args[2]);
               strcpy(fileops.dst, args[3]);
@@ -247,6 +248,7 @@ int main (int argc, char ** argv)
             syserrmsg("error morph takes two or three parameters", NULL);
           }
           else {
+            fileops.op = 0
             if (args[1] == "-r") {
               strcpy(fileops.src, args[2]);
               strcpy(fileops.dst, args[3]);
@@ -576,9 +578,11 @@ int dofileoperation(filemanip *fileops ) {
 
 // Check if a file is a directory
 int is_directory(const char *path) {
+  syserrmsg("is_directory: is the following is a directory?", NULL);
   struct stat statbuf;
   if (stat(path, &statbuf) != 0)
     return 0; //Failed, can check errno
+
   return S_ISDIR(statbuf.st_mode); //Returns true/false for isdir
 }
 
