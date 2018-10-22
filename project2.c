@@ -369,7 +369,8 @@ int dofileoperation(filemanip *fileops ) {
     int is_dst_dir = is_directory(fileops->dst);
 
 
-    // If the dst is a valid directory, give the dst the file name of the src
+    // If the dst is a valid directory,
+    // give the dst the file name of the src
     if (is_dst_dir) {
       syserrmsg("Fileops: entered dst is dir branch", NULL);
       char dst_name[MAX_FILENAME/2];
@@ -396,8 +397,9 @@ int dofileoperation(filemanip *fileops ) {
 
 
     //Src is a directory
+    //Create new directory if empty, or recursively copy contents
     if (is_src_dir) {
-      //syserrmsg("Fileops: Entered src is dir branch", NULL);
+      syserrmsg("Fileops: Entered src is dir branch", NULL);
 
       //If directory is empty make a new directory in dst
       int n = is_directory_empty(fileops->src);
@@ -417,8 +419,8 @@ int dofileoperation(filemanip *fileops ) {
       }
       else if (n == 0) {
         //Directory is not Empty
-        if(!(fileops->op & RECUR)) { //Copy contents recursively
-          syserrmsg("src is a directory, copy recursively", NULL);
+        if(fileops->op & RECUR) { //Copy contents recursively
+          syserrmsg("Fileops: entered recursive branch", NULL);
 
           //Create new directory
           if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) {
@@ -449,6 +451,8 @@ int dofileoperation(filemanip *fileops ) {
               //Destination is newly created directory at dst
               strcpy(newfilemanip.dst, fileops->dst);
 
+              syserrmsg("Calling dofileoperation with args:", NULL);
+              syserrmsg(newfilemanip.dst, newfilemanip.src);
               //Call dofileoperation
               dofileoperation(&newfilemanip);
             }
@@ -459,14 +463,13 @@ int dofileoperation(filemanip *fileops ) {
           closedir(src_dirp);
         }
         else { //Fail, since not recursive
-          syserrmsg("src is not an empty directory", NULL);
+          syserrmsg("src is not an empty directory, recursion not active", NULL);
           return EXIT_FAILURE;
         }
 
       }
     } //End of src is dir case
-
-    //Src is a file case
+    //Src is a file
     else {
       //syserrmsg("Fileops: entered src is file branch", NULL);
 
@@ -482,7 +485,6 @@ int dofileoperation(filemanip *fileops ) {
           return EXIT_FAILURE;
         }
       }
-
       //Open dst_fd for writing
       int dst_fd = open(fileops->dst, dst_flags, dst_perms);
       //syserrmsg("Successfully called open() in dst", NULL);
