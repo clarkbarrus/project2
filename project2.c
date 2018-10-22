@@ -50,6 +50,7 @@ erase - erases src directory or file,
 #include <fcntl.h>
 #include <libgen.h>
 #include <dirent.h>
+#include <sys/wait.h>
 
 //Definitions
 #define MAX_BUFFER 1024                        // max line buffer
@@ -344,14 +345,17 @@ int main (int argc, char ** argv)
       // else pass command onto OS with fork and exec
 
       pid_t pid; //pid for fork() call
+      int status; //Will hold status of returned child if needed
+      int dont_wait = 0; //Wait by default
       //Fork, pass shell command to child, parent should wait on child to finish
         switch (pid = fork()) {
           case -1:
             //Error in forking
             syserrmsg("fork", NULL);
           case 0:                 // child
+            //Implement io redirection here!
             execvp (args[0], args);
-            syserrmsg("exec", NULL);
+            syserrmsg("exec", NULL); //Should not reach this code
           default:                // parent
             if (!dont_wait)
               waitpid(pid, &status, WUNTRACED);
