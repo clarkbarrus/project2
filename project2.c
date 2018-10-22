@@ -357,7 +357,7 @@ int main (int argc, char ** argv)
             //Detect, <, >, >> and call appropriate freopen() and remove
             //appropriate args elements from args, and move everything up as needed
             arg = args;
-            while (*(++arg) { //Increment through args[1] to the final null args[n]
+            while (*(++arg)) { //Increment through args[1] to the final null args[n]
               //Look for <, >, >>
               syserrmsg("Inside while loop, checking arg:", *arg);
               if (!strcmp(*arg, "<")) {
