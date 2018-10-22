@@ -248,7 +248,7 @@ int main (int argc, char ** argv)
             syserrmsg("error morph takes two or three parameters", NULL);
           }
           else {
-            fileops.op = 0
+            fileops.op = 0;
             if (args[1] == "-r") {
               strcpy(fileops.src, args[2]);
               strcpy(fileops.dst, args[3]);
