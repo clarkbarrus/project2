@@ -226,7 +226,7 @@ int main (int argc, char ** argv)
           }
           else {
             fileops.op =  0;
-            if (args[1] == "-r") {
+            if (!strcmp(args[1], "-r")) {
               strcpy(fileops.src, args[2]);
               strcpy(fileops.dst, args[3]);
               fileops.op = MIMIC | RECUR;
@@ -249,7 +249,7 @@ int main (int argc, char ** argv)
           }
           else {
             fileops.op = 0;
-            if (args[1] == "-r") {
+            if (!strcmp(args[1], "-r")) {
               strcpy(fileops.src, args[2]);
               strcpy(fileops.dst, args[3]);
               fileops.op = MORPH | RECUR;
@@ -258,7 +258,7 @@ int main (int argc, char ** argv)
             else { //If incorrect parameters are passed, dofileops will fail
               strcpy(fileops.src, args[1]);
               strcpy(fileops.dst, args[2]);
-              fileops.op = MORPH | RECUR;
+              fileops.op = MORPH;
               dofileoperation(&fileops);
             }
           }
@@ -439,7 +439,7 @@ int dofileoperation(filemanip *fileops ) {
           struct dirent * entry = readdir(src_dirp);
           while(entry != NULL) { //Loop for all files in directory
             //Read dirent. If . or .. ignore and move on.
-            if (strcmp(entry->d_name, ".") || strcmp(entry->d_name, "..")) {
+            if ( !strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
               //Don't do anything for . and .. files
               syserrmsg("Recognize directory entry as . or ..", NULL);
             }
