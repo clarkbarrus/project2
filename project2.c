@@ -353,20 +353,41 @@ int main (int argc, char ** argv)
             //Error in forking
             syserrmsg("fork", NULL);
           case 0:                 // child
-            //Implement io redirection here!
-            syserrmsg("About to execute execvp with args[0]:", args[0]);
+            //Io redirection here!
+            //Detect, <, >, >> and call appropriate freopen() and remove
+            //appropriate args elements from args, and move everything up as needed
+            //syserrmsg("About to execute execvp with args[0]:", args[0]);
+            arg = args;
+            while (*arg++) { //Increment through args[1] to the final null args[n]
+              //Look for <, >, >>
+              if (!strcmp(*arg, "<")) {
+                //Arg is pointing to <
+                //Check if arg++ is a valid file for input
+                if(!access(*arg++, F_OK | R_OK)) {
+                  //File is valid, set it as stdin
+                  syserrmsg("Redirecting file!", *arg);
+                  freopen(*arg, "r", stdin);
+                }
+                else { //Invalid file
+                  syserrmsg("Bad file for < redirection", NULL);
+                }
+
+                //Move over the rest of the array, overwriting arg and arg++
+                char
+              }
+            }
+
+
             execvp (args[0], args);
-            syserrmsg("exec", NULL); //Should not reach this code
-            perror("Exec error:");
+            syserrmsg("exec error", NULL); //Should not reach this code
+            perror(NULL);
           default:                // parent
             if (!dont_wait)
               waitpid(pid, &status, WUNTRACED);
         }
-
-
-    }
+      }
     free(bufcopy); //Free buf copy after potentially passing it to system
-  }
+    }
   }
   return 0;
 }
