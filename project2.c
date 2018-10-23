@@ -368,7 +368,7 @@ int main (int argc, char ** argv)
                 arg++; //Look at the file arguement
                 if(!access(*arg, F_OK) && !access(*arg, R_OK)) { //Check for existence and read permission
                   //File is valid, process has read permission set it as stdin
-                  syserrmsg("Redirecting file!", *arg);
+                  syserrmsg("Redirecting file:", *arg);
                   freopen(*arg, "r", stdin);
                 }
                 else { //Invalid file or permission
@@ -381,7 +381,7 @@ int main (int argc, char ** argv)
                 syserrmsg("Vars are as follows, arg, first, second", *arg);
                 syserrmsg(*first, *second);
                 while (*second) { //Overwrite the redirect operator and file name
-                  strcpy(*first, *second);
+                  *first = *second);
                   first++;
                   second++;
                   syserrmsg("Vars are now, first, second", NULL);
