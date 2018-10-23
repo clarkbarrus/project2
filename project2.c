@@ -381,7 +381,7 @@ int main (int argc, char ** argv)
                 syserrmsg("Vars are as follows, arg, first, second", *arg);
                 syserrmsg(*first, *second);
                 while (*second) { //Overwrite the redirect operator and file name
-                  *first = *second);
+                  *first = *second;
                   first++;
                   second++;
                   syserrmsg("Vars are now, first, second", NULL);
