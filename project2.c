@@ -491,7 +491,7 @@ int dofileoperation(filemanip *fileops ) {
     // If the dst is a valid directory,
     // give the dst the file name of the src
     if (is_dst_dir) {
-      syserrmsg("Fileops: entered dst is dir branch", NULL);
+      //syserrmsg("Fileops: entered dst is dir branch", NULL);
       char dst_name[MAX_FILENAME/2];
       char dst_path[MAX_FILENAME/2];
       char dst_dir[MAX_FILENAME/2];
@@ -698,7 +698,7 @@ int dofileoperation(filemanip *fileops ) {
 
 // Check if a file is a directory
 int is_directory(const char *path) {
-  syserrmsg("is_directory: is the following is a directory?", path);
+  //syserrmsg("is_directory: is the following is a directory?", path);
   struct stat statbuf;
   if (stat(path, &statbuf) != 0)
     return 0; //Failed, can check errno
