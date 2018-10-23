@@ -364,6 +364,7 @@ int main (int argc, char ** argv)
                 syserrmsg("Detected that arg is <!", NULL);
                 //Arg is pointing to <
                 //Check if arg++ is a valid file for input
+                char ** first = arg;
                 if(!access(*arg++, F_OK | R_OK)) {
                   //File is valid, set it as stdin
                   syserrmsg("Redirecting file!", *arg);
@@ -372,7 +373,21 @@ int main (int argc, char ** argv)
                 else { //Invalid file
                   syserrmsg("Bad file for < redirection", NULL);
                 }
+
                 //Move over the rest of the array, overwriting arg and arg++
+                char ** second = (arg++); //second points to arg[] after file name
+                arg = first; //First points to redirect operator
+                syserrmsg("Vars are as follows, arg, first, second", *arg);
+                syserrmsg(*first, *second);
+                while (*second) { //Overwrite the redirect operator and file name
+                  strcpy(*first, *second);
+                  first++;
+                  second++;
+                  syserrmsg("Vars are now, first, second", NULL);
+                  syserrmsg(*first, *second);
+                }
+                *first = NULL;
+                *(first++) = NULL; //args array has now removed the filename and redirect character
               }
             }
 
