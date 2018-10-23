@@ -119,7 +119,6 @@ int main (int argc, char ** argv)
       }
 
       // tokenize the input into args array
-      char * bufcopy = strdup(buf); //Copy user input to potentially pass to system()
       arg = args;
       *arg++ = strtok(buf,SEPARATORS);   // tokenize input
       while ((*arg++ = strtok(NULL,SEPARATORS)));
@@ -173,9 +172,18 @@ int main (int argc, char ** argv)
         //wipe
         if (!strcmp(args[0],"wipe"))  // "clear" command
         {
-          fflush(stdout);
-          system("clear");
-          fflush(stdout);
+          switch (pid = fork ()) {
+            case -1:
+            syserr("fork");
+            case 0:                 // child
+            args[0] = "clear";
+            execvp (args[0], args); //Will call clear
+            syserr("exec"); //Should never be reached
+            return EXIT_FAILURE;
+            default:                // parent
+            if (!dont_wait)
+            waitpid(pid, &status, WUNTRACED);
+          }
           continue;
         }
 
@@ -290,18 +298,40 @@ int main (int argc, char ** argv)
         //filez
         if (!strcmp(args[0],"filez")) // "ls" command
         {
-          //Construct command to pass to system
           if (args[1])
           {
-            char buffer[MAX_BUFFER];
-            snprintf(buffer, MAX_BUFFER, "%s%s", "ls -1 ", args[1]);
-            system(buffer);
+            switch (pid = fork ()) {
+              case -1:
+              syserr("fork");
+              case 0:
+            args[0] = "ls";
+            args[2] = args[1];
+            args[1] = "-1";
+            args[3] = NULL;
+            execvp (args[0], args); //Will call clear
+            syserr("exec"); //Should never be reached
+            return EXIT_FAILURE;
+            default:                // parent
+            if (!dont_wait)
+            waitpid(pid, &status, WUNTRACED);
+            }
           }
           else
           {
-            fflush(stdout);
-            system("ls -1");
-            fflush(stdout);
+            switch (pid = fork ()) {
+              case -1:
+              syserr("fork");
+              case 0:                 // child
+              args[0] = "ls";
+              args[1] = "-1";
+              args[2] = NULL;
+              execvp (args[0], args); //Will call clear
+              syserr("exec"); //Should never be reached
+              return EXIT_FAILURE;
+              default:                // parent
+              if (!dont_wait)
+              waitpid(pid, &status, WUNTRACED);
+            }
           }
           continue;
         }
@@ -428,13 +458,13 @@ int main (int argc, char ** argv)
             execvp (args[0], args);
             syserrmsg("exec error", NULL); //Should not reach this code
             perror(NULL);
+            return EXIT_FAILURE;
             //End of case 0:
           default:                // parent
             if (!dont_wait)
               waitpid(pid, &status, WUNTRACED);
         }
       }
-    free(bufcopy); //Free buf copy after potentially passing it to system
     }
   }
   return 0;
@@ -487,7 +517,7 @@ int dofileoperation(filemanip *fileops ) {
     //Src is a directory
     //Create new directory if empty, or recursively copy contents
     if (is_src_dir) {
-      syserrmsg("Fileops: Entered src is dir branch", NULL);
+      //syserrmsg("Fileops: Entered src is dir branch", NULL);
 
       //If directory is empty make a new directory in dst
       int n = is_directory_empty(fileops->src);
@@ -503,13 +533,13 @@ int dofileoperation(filemanip *fileops ) {
           perror(NULL);
           return EXIT_FAILURE;
         }
-        syserrmsg("Succcessfully called mkdir in dst", NULL);
+        //syserrmsg("Succcessfully called mkdir in dst", NULL);
       }
       else if (n == 0) {
         //Directory is not Empty
-        fprintf(stderr, "op: %d, op & RECUR: %d \n", fileops->op, fileops->op & RECUR);
+        //fprintf(stderr, "op: %d, op & RECUR: %d \n", fileops->op, fileops->op & RECUR);
         if(fileops->op & RECUR) { //Copy contents recursively
-          syserrmsg("Fileops: entered recursive branch", NULL);
+          //syserrmsg("Fileops: entered recursive branch", NULL);
 
           //Create new directory
           if(mkdir(fileops->dst, dst_perms | S_IXUSR | S_IXGRP)) {
@@ -517,7 +547,7 @@ int dofileoperation(filemanip *fileops ) {
             perror(NULL);
             return EXIT_FAILURE;
           }
-          syserrmsg("Created new directory:", fileops->dst);
+          //syserrmsg("Created new directory:", fileops->dst);
 
           //Open dir
           DIR * src_dirp = opendir(fileops->src);
@@ -527,7 +557,7 @@ int dofileoperation(filemanip *fileops ) {
             //Read dirent. If . or .. ignore and move on.
             if ( !strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
               //Don't do anything for . and .. files
-              syserrmsg("Recognize directory entry as . or ..", NULL);
+              //syserrmsg("Recognize directory entry as . or ..", NULL);
             }
             else {
               //Set up and call dofileoperation
@@ -542,8 +572,8 @@ int dofileoperation(filemanip *fileops ) {
               //Destination is newly created directory at dst
               strcpy(newfilemanip.dst, fileops->dst);
 
-              syserrmsg("Calling dofileoperation with args:", NULL);
-              syserrmsg(newfilemanip.dst, newfilemanip.src);
+              //syserrmsg("Calling dofileoperation with args:", NULL);
+              //syserrmsg(newfilemanip.dst, newfilemanip.src);
               //Call dofileoperation
               dofileoperation(&newfilemanip);
             }
