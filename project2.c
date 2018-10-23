@@ -723,11 +723,11 @@ int is_directory_empty(char * path) {
   }
   closedir(dir);
   if (n <= 2) {//Directory Empty, keeping in mind . and ..
-    syserrmsg("is_directory_empty returned true", NULL);
+    //syserrmsg("is_directory_empty returned true", NULL);
     return 1; //True
   }
   else {
-    syserrmsg("is_directory_empty returned false", NULL);
+    //syserrmsg("is_directory_empty returned false", NULL);
     return 0; //False
   }
 }
