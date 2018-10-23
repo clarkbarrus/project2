@@ -373,7 +373,7 @@ int main (int argc, char ** argv)
                   if(!access(*arg, F_OK) && !access(*arg, R_OK | W_OK)) { //Check for existence and read permission
                   //File is valid, process has read permission set it as stdin
                   syserrmsg("Calling freopen for r with arg:", *arg);
-                    if (freopen(*arg, "r", stdin)) {
+                    if (!freopen(*arg, "r", stdin)) {
                       syserrmsg("Error with < freopen()", NULL);
                       return EXIT_FAILURE;
                     }
@@ -387,7 +387,7 @@ int main (int argc, char ** argv)
                 else if (!strcmp(*arg, ">")) {
                   arg++; //Look at the file arguement
                   syserrmsg("Calling freopen for w with arg:", *arg);
-                  if (freopen(*arg, "w", stdout)) {
+                  if (!freopen(*arg, "w", stdout)) {
                     syserrmsg("Error with > freopen()", NULL);
                     return EXIT_FAILURE;
                   }
@@ -395,7 +395,7 @@ int main (int argc, char ** argv)
                 else if (!strcmp(*arg, ">>")) {
                   arg++; //Look at the file arguement
                   syserrmsg("Calling freopen for a with arg:", *arg);
-                  if (freopen(*arg, "a", stdout)) {
+                  if (!freopen(*arg, "a", stdout)) {
                     syserrmsg("Error with >> freopen()", NULL);
                     return EXIT_FAILURE;
                   }
