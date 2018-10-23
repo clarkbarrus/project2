@@ -87,6 +87,9 @@ int main (int argc, char ** argv)
   char * args[MAX_ARGS];                     // pointers to arg strings
   char ** arg;                               // working pointer thru args
   char * prompt = "==>" ;                    // shell prompt
+  pid_t pid; //pid for fork() call
+  int status; //Will hold status of returned child if needed
+  int dont_wait = 0; //Wait by default
 
   setbuf(stdout, NULL);
 
@@ -374,9 +377,7 @@ int main (int argc, char ** argv)
 
       // else pass command onto OS with fork and exec
 
-      pid_t pid; //pid for fork() call
-      int status; //Will hold status of returned child if needed
-      int dont_wait = 0; //Wait by default
+
       //Fork, pass shell command to child, parent should wait on child to finish
         switch (pid = fork()) {
           case -1:
