@@ -365,12 +365,13 @@ int main (int argc, char ** argv)
                 //Arg is pointing to <
                 //Check if arg++ is a valid file for input
                 char ** first = arg;
-                if(!access(*arg++, F_OK | R_OK)) {
-                  //File is valid, set it as stdin
+                arg++; //Look at the file arguement
+                if(!access(*arg, F_OK) && !access(*arg, R_OK)) { //Check for existence and read permission
+                  //File is valid, process has read permission set it as stdin
                   syserrmsg("Redirecting file!", *arg);
                   freopen(*arg, "r", stdin);
                 }
-                else { //Invalid file
+                else { //Invalid file or permission
                   syserrmsg("Bad file for < redirection", NULL);
                 }
 
