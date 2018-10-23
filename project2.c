@@ -367,25 +367,36 @@ int main (int argc, char ** argv)
 
                 //Check if arg++ is a valid file for input
                 arg++; //Look at the file arguement
-                if(!access(*arg, F_OK) && !access(*arg, R_OK | W_OK)) { //Check for existence and read permission
+                //File is valid, process has read permission set it as stdin
+                syserrmsg("Redirecting file:", *arg);
+                if(!strcmp(*arg, "<")) {
+                  if(!access(*arg, F_OK) && !access(*arg, R_OK | W_OK)) { //Check for existence and read permission
                   //File is valid, process has read permission set it as stdin
-                  syserrmsg("Redirecting file:", *arg);
-                  if(!strcmp(*arg, "<")) {
-                    if (freopen(*arg, "r", stdin))
+                    if (freopen(*arg, "r", stdin)) {
                       syserrmsg("Error with < freopen()", NULL);
+                      return EXIT_FAILURE;
+                    }
                   }
-                  else if (!strcmp(*arg, ">")) {
-                    if (freopen(*arg, "w", stdout))
-                      syserrmsg("Error with < freopen()", NULL);
-                  }
-                  else if (!strcmp(*arg, ">>")) {
-                    if (freopen(*arg, "a", stdout))
-                      syserrmsg("Error with < freopen()", NULL);
+                  else { //Invalid input file
+                     syserrmsg("Bad file for I/O redirection", NULL);
+                     //Should make child program return?
+                     return EXIT_FAILURE;
                   }
                 }
-                else { //Invalid file or permission
-                  syserrmsg("Bad file for I/O redirection", NULL);
+                else if (!strcmp(*arg, ">")) {
+                  if (freopen(*arg, "w", stdout)) {
+                    syserrmsg("Error with < freopen()", NULL);
+                    return EXIT_FAILURE;
+                  }
                 }
+                else if (!strcmp(*arg, ">>")) {
+                  if (freopen(*arg, "a", stdout)) {
+                    syserrmsg("Error with < freopen()", NULL);
+                    return EXIT_FAILURE;
+                  }
+                }
+
+
 
                 //Move over the rest of the array, overwriting arg and arg++
                 char ** second = (++arg); //second points to arg[] after file name
