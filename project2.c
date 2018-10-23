@@ -360,19 +360,31 @@ int main (int argc, char ** argv)
             while (*(++arg)) { //Increment through args[1] to the final null args[n]
               //Look for <, >, >>
               syserrmsg("Inside while loop, checking arg:", *arg);
-              if (!strcmp(*arg, "<")) {
-                syserrmsg("Detected that arg is <!", NULL);
-                //Arg is pointing to <
+              if (!strcmp(*arg, "<") || !strcmp(*arg, ">") || !strcmp(*arg, ">>")) {
+                syserrmsg("Detected I/O redirect character", NULL);
+
+                char ** first = arg; //For use later
+
                 //Check if arg++ is a valid file for input
-                char ** first = arg;
                 arg++; //Look at the file arguement
-                if(!access(*arg, F_OK) && !access(*arg, R_OK)) { //Check for existence and read permission
+                if(!access(*arg, F_OK) && !access(*arg, R_OK | W_OK)) { //Check for existence and read permission
                   //File is valid, process has read permission set it as stdin
                   syserrmsg("Redirecting file:", *arg);
-                  freopen(*arg, "r", stdin);
+                  if(!strcmp(*arg, "<")) {
+                    if (freopen(*arg, "r", stdin))
+                      syserrmsg("Error with < freopen()", NULL);
+                  }
+                  else if (!strcmp(*arg, ">")) {
+                    if (freopen(*arg, "w", stdout))
+                      syserrmsg("Error with < freopen()", NULL);
+                  }
+                  else if (!strcmp(*arg, ">>")) {
+                    if (freopen(*arg, "a", stdout))
+                      syserrmsg("Error with < freopen()", NULL);
+                  }
                 }
                 else { //Invalid file or permission
-                  syserrmsg("Bad file for < redirection", NULL);
+                  syserrmsg("Bad file for I/O redirection", NULL);
                 }
 
                 //Move over the rest of the array, overwriting arg and arg++
