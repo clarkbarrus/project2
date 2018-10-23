@@ -375,7 +375,7 @@ int main (int argc, char ** argv)
                 }
 
                 //Move over the rest of the array, overwriting arg and arg++
-                char ** second = (arg++); //second points to arg[] after file name
+                char ** second = (++arg); //second points to arg[] after file name
                 arg = first; //First points to redirect operator
                 syserrmsg("Vars are as follows, arg, first, second", *arg);
                 syserrmsg(*first, *second);
