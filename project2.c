@@ -177,11 +177,11 @@ int main (int argc, char ** argv)
         {
           switch (pid = fork ()) {
             case -1:
-            syserr("fork");
+            syserrmsg("fork", NULL);
             case 0:                 // child
             args[0] = "clear";
             execvp (args[0], args); //Will call clear
-            syserr("exec"); //Should never be reached
+            syserrmsg("exec", NULL); //Should never be reached
             return EXIT_FAILURE;
             default:                // parent
             if (!dont_wait)
@@ -305,14 +305,14 @@ int main (int argc, char ** argv)
           {
             switch (pid = fork ()) {
               case -1:
-              syserr("fork");
+              syserrmsg("fork", NULL);
               case 0:
             args[0] = "ls";
             args[2] = args[1];
             args[1] = "-1";
             args[3] = NULL;
             execvp (args[0], args); //Will call clear
-            syserr("exec"); //Should never be reached
+            syserrmsg("exec", NULL); //Should never be reached
             return EXIT_FAILURE;
             default:                // parent
             if (!dont_wait)
@@ -323,13 +323,13 @@ int main (int argc, char ** argv)
           {
             switch (pid = fork ()) {
               case -1:
-              syserr("fork");
+              syserrmsg("fork", NULL);
               case 0:                 // child
               args[0] = "ls";
               args[1] = "-1";
               args[2] = NULL;
               execvp (args[0], args); //Will call clear
-              syserr("exec"); //Should never be reached
+              syserrmsg("exec", NULL); //Should never be reached
               return EXIT_FAILURE;
               default:                // parent
               if (!dont_wait)
