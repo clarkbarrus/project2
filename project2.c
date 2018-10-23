@@ -385,13 +385,13 @@ int main (int argc, char ** argv)
                 }
                 else if (!strcmp(*arg, ">")) {
                   if (freopen(*arg, "w", stdout)) {
-                    syserrmsg("Error with < freopen()", NULL);
+                    syserrmsg("Error with > freopen()", NULL);
                     return EXIT_FAILURE;
                   }
                 }
                 else if (!strcmp(*arg, ">>")) {
                   if (freopen(*arg, "a", stdout)) {
-                    syserrmsg("Error with < freopen()", NULL);
+                    syserrmsg("Error with >> freopen()", NULL);
                     return EXIT_FAILURE;
                   }
                 }
@@ -412,6 +412,7 @@ int main (int argc, char ** argv)
                 }
                 *first = NULL;
                 *(first++) = NULL; //args array has now removed the filename and redirect character
+                arg--; //Backtrack arg to correctly check next arguemnt
               }
             }
 
