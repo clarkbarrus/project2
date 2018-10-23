@@ -366,10 +366,10 @@ int main (int argc, char ** argv)
                 char ** first = arg; //For use later
 
                 //Check if arg++ is a valid file for input
-                arg++; //Look at the file arguement
                 //File is valid, process has read permission set it as stdin
                 syserrmsg("Redirecting file:", *arg);
                 if(!strcmp(*arg, "<")) {
+                  arg++; //Look at the file arguement
                   if(!access(*arg, F_OK) && !access(*arg, R_OK | W_OK)) { //Check for existence and read permission
                   //File is valid, process has read permission set it as stdin
                   syserrmsg("Calling freopen for r with arg:", *arg);
@@ -385,6 +385,7 @@ int main (int argc, char ** argv)
                   }
                 }
                 else if (!strcmp(*arg, ">")) {
+                  arg++; //Look at the file arguement
                   syserrmsg("Calling freopen for w with arg:", *arg);
                   if (freopen(*arg, "w", stdout)) {
                     syserrmsg("Error with > freopen()", NULL);
@@ -392,12 +393,16 @@ int main (int argc, char ** argv)
                   }
                 }
                 else if (!strcmp(*arg, ">>")) {
+                  arg++; //Look at the file arguement
                   syserrmsg("Calling freopen for a with arg:", *arg);
                   if (freopen(*arg, "a", stdout)) {
                     syserrmsg("Error with >> freopen()", NULL);
                     return EXIT_FAILURE;
                   }
                 }
+                else
+                arg++; //Look at the file arguement
+
 
 
 
