@@ -359,34 +359,34 @@ int main (int argc, char ** argv)
             arg = args;
             while (*(++arg)) { //Increment through args[1] to the final null args[n]
               //Look for <, >, >>
-              syserrmsg("Inside while loop, checking arg:", *arg);
+              //syserrmsg("Inside while loop, checking arg:", *arg);
               if (!strcmp(*arg, "<") || !strcmp(*arg, ">") || !strcmp(*arg, ">>")) {
-                syserrmsg("Detected I/O redirect character", NULL);
+                //syserrmsg("Detected I/O redirect character", NULL);
 
                 char ** first = arg; //For use later
 
                 //Check if arg++ is a valid file for input
                 //File is valid, process has read permission set it as stdin
-                syserrmsg("Redirecting file:", *arg);
+                //syserrmsg("Redirecting file:", *arg);
                 if(!strcmp(*arg, "<")) {
                   arg++; //Look at the file arguement
                   if(!access(*arg, F_OK) && !access(*arg, R_OK | W_OK)) { //Check for existence and read permission
                   //File is valid, process has read permission set it as stdin
-                  syserrmsg("Calling freopen for r with arg:", *arg);
+                  //syserrmsg("Calling freopen for r with arg:", *arg);
                     if (!freopen(*arg, "r", stdin)) {
                       syserrmsg("Error with < freopen()", NULL);
                       return EXIT_FAILURE;
                     }
                   }
                   else { //Invalid input file
-                     syserrmsg("Bad file for I/O redirection", NULL);
+                     syserrmsg("Bad file for stdin redirection", NULL);
                      //Should make child program return?
                      return EXIT_FAILURE;
                   }
                 }
                 else if (!strcmp(*arg, ">")) {
                   arg++; //Look at the file arguement
-                  syserrmsg("Calling freopen for w with arg:", *arg);
+                  //syserrmsg("Calling freopen for w with arg:", *arg);
                   if (!freopen(*arg, "w", stdout)) {
                     syserrmsg("Error with > freopen()", NULL);
                     return EXIT_FAILURE;
@@ -394,7 +394,7 @@ int main (int argc, char ** argv)
                 }
                 else if (!strcmp(*arg, ">>")) {
                   arg++; //Look at the file arguement
-                  syserrmsg("Calling freopen for a with arg:", *arg);
+                  //syserrmsg("Calling freopen for a with arg:", *arg);
                   if (!freopen(*arg, "a", stdout)) {
                     syserrmsg("Error with >> freopen()", NULL);
                     return EXIT_FAILURE;
@@ -409,14 +409,14 @@ int main (int argc, char ** argv)
                 //Move over the rest of the array, overwriting arg and arg++
                 char ** second = (++arg); //second points to arg[] after file name
                 arg = first; //First points to redirect operator
-                syserrmsg("Vars are as follows, arg, first, second", *arg);
-                syserrmsg(*first, *second);
+                //syserrmsg("Vars are as follows, arg, first, second", *arg);
+                //syserrmsg(*first, *second);
                 while (*second) { //Overwrite the redirect operator and file name
                   *first = *second;
                   first++;
                   second++;
-                  syserrmsg("Vars are now, first, second", NULL);
-                  syserrmsg(*first, *second);
+                  //syserrmsg("Vars are now, first, second", NULL);
+                  //syserrmsg(*first, *second);
                 }
                 *first = NULL;
                 *(first++) = NULL; //args array has now removed the filename and redirect character
@@ -424,7 +424,7 @@ int main (int argc, char ** argv)
               }
             }
 
-            syserrmsg("About to execute execvp with args[0]:", args[0]);
+            //syserrmsg("About to execute execvp with args[0]:", args[0]);
             execvp (args[0], args);
             syserrmsg("exec error", NULL); //Should not reach this code
             perror(NULL);
